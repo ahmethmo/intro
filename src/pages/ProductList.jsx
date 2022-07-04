@@ -1,26 +1,40 @@
 import React, { useEffect, useState } from 'react'
-import { Icon, Menu, Table } from 'semantic-ui-react'
+import { Link } from 'react-router-dom'
+import { Icon, Menu, Table, Button } from 'semantic-ui-react'
 import ProductService from '../services/productService';
-
+import { toast } from 'react-toastify'
 
 export default function ProductList() {
 
   const [products, setProducts] = useState([])
-  useEffect(()=>{
+  useEffect(() => {
     let productService = new ProductService();
     productService.getProducts().then(result => setProducts(result.data))
-  },[])
+  }, [])
+
+  function deleteProduct(id) {
+    let productService = new ProductService();
+    productService.deleteProduct(id).then(result => {
+      if (result.status === 200 ){
+        setProducts(products.filter((item) => item.id !== id))
+        toast.success("Silindi");
+      }
+    });
+  }
 
   return (
     <div>
       <Table celled>
         <Table.Header>
           <Table.Row>
+            <Table.HeaderCell>Id</Table.HeaderCell>
             <Table.HeaderCell>Ürün Adı</Table.HeaderCell>
             <Table.HeaderCell>Birim fiyatı</Table.HeaderCell>
             <Table.HeaderCell>Stok Adeti</Table.HeaderCell>
             <Table.HeaderCell>Açıklama</Table.HeaderCell>
             <Table.HeaderCell>Kategori</Table.HeaderCell>
+            <Table.HeaderCell>Güncelle</Table.HeaderCell>
+            <Table.HeaderCell>Sil</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
 
@@ -28,11 +42,14 @@ export default function ProductList() {
           {
             products.map(p => (
               <Table.Row key={p.id}>
-                <Table.Cell>{p.name}</Table.Cell>
+                <Table.Cell>{p.id}</Table.Cell>
+                <Table.Cell><Link to={`/product/detail/${p.id}`}>{p.name}</Link></Table.Cell>
                 <Table.Cell>{p.unitPrice}</Table.Cell>
                 <Table.Cell>{p.unitsInStock}</Table.Cell>
                 <Table.Cell>{p.quantityPerUnit}</Table.Cell>
                 <Table.Cell>{p.categoryId}</Table.Cell>
+                <Table.Cell><Link to={`/product/update/${p.id}`}><Button color='blue'>Düzenle</Button></Link></Table.Cell>
+                <Table.Cell><Button color="red" onClick={() => { deleteProduct(p.id); }} >Sil</Button></Table.Cell>
               </Table.Row>
             ))
           }
